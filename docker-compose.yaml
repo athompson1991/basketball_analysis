@@ -3,6 +3,6 @@ services:
   test:
     build: .
     volumes:
-      - .:/tests
+      - .:/basketball_project
     stdin_open: true
     tty: true

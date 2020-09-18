@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_true, assert_equal, assert_is_not_none
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from core.odds import OddsClassifier
@@ -47,10 +47,6 @@ class TestOddsClassifier:
         p_hat = self.classifier.predict_proba(self.X_1d)
         assert_array_almost_equal(p_hat, self.X_1p)
 
-    def test_predict_proba_1d(self):
-        p_hat = self.classifier.predict_proba(self.X_2d)
-        assert_array_almost_equal(p_hat, self.X_2p)
-
     def test_accuracy(self):
         self.classifier.fit(self.X_1d, self.y)
         accuracy = self.classifier.accuracy()
@@ -59,8 +55,10 @@ class TestOddsClassifier:
     def test_bootstrap_accuracy(self):
         self.classifier.fit(self.X_2d, self.y)
         acc = self.classifier.bootstrap_accuracy(n_iterations=100)
+        assert_is_not_none(acc)
         self.classifier.fit(self.X_1d, self.y)
         acc = self.classifier.bootstrap_accuracy(n_iterations=100)
+        assert_is_not_none(acc)
 
     def test_pandas(self):
         df = pd.DataFrame(self.X_2d)

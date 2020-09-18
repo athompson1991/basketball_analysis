@@ -1,12 +1,15 @@
 import numpy as np
+from pandas import Series
 
 
 def get_implied_probability(ml):
-    ml = float(ml)
-    if ml > 0:
-        return 100 / (ml + 100)
+    fn = lambda x: 100 / (x + 100) if x > 0 else -x / (-x + 100)
+    if isinstance(ml, Series):
+        ml = ml.astype(float)
+        return ml.apply(fn)
     else:
-        return -ml / (-ml + 100)
+        ml = float(ml)
+        return fn(ml)
 
 
 def zero_to_one(x):

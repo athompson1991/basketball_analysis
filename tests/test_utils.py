@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from nose.tools import assert_equal, assert_almost_equal
 from numpy.testing import assert_array_almost_equal
 
@@ -33,4 +34,6 @@ def test_implied_probability_vec():
     expected = np.array([0.52380952, 0.33333333, 0.25, 0.71428571])
     vec = np.array([-110, 200, 300, -250])
     p = get_implied_probability_vec(vec)
+    assert_array_almost_equal(expected, p)
+    p = get_implied_probability(pd.Series(vec))
     assert_array_almost_equal(expected, p)
