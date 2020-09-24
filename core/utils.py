@@ -7,6 +7,12 @@ def get_implied_probability(ml):
     if isinstance(ml, Series):
         ml = ml.astype(float)
         return ml.apply(fn)
+    elif isinstance(ml, np.ndarray):
+        ml = ml.astype(float)
+        return np.vectorize(fn)(ml)
+    elif isinstance(ml, list):
+        ml = [float(l) for l in ml]
+        return np.vectorize(fn)(ml)
     else:
         ml = float(ml)
         return fn(ml)
@@ -19,6 +25,3 @@ def zero_to_one(x):
 def to_infinity(x):
     return np.log(x / (1 - x))
 
-
-def get_implied_probability_vec(ml_vec):
-    return np.array([get_implied_probability(ml) for ml in ml_vec])

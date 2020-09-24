@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.utils import resample
 from sklearn.utils.multiclass import unique_labels
 
-from core.utils import get_implied_probability_vec
+from core.utils import get_implied_probability
 
 
 class OddsClassifier(BaseEstimator, ClassifierMixin):
@@ -16,19 +16,21 @@ class OddsClassifier(BaseEstimator, ClassifierMixin):
         if isinstance(X, pd.DataFrame):
             X = np.array(X)
         if X.ndim == 1:
-            p = get_implied_probability_vec(X)
+            p = get_implied_probability(X)
         elif X.ndim == 2 and X.shape[1] == 1:
-            p = get_implied_probability_vec(X.reshape(-1))
+            p = get_implied_probability(X.reshape(-1))
         elif X.ndim == 2 and X.shape[1] > 1:
             if X.shape[1] > 2:
                 warnings.warn("More than 2 columns in data, first "
                               "two assumed to be money line odds")
-            p1 = get_implied_probability_vec(X[:, 0])
-            p2 = 1 - get_implied_probability_vec(X[:, 1])
+            p1 = get_implied_probability(X[:, 0])
+            p2 = 1 - get_implied_probability(X[:, 1])
             p = (p1 + p2) / 2
         return p
 
     def fit(self, X, y):
+        if isinstance(y, pd.Series):
+            y = y.values
         if isinstance(X, pd.DataFrame):
             if X.ndim == 2 and X.shape[1] == 1:
                 X = np.array(X).reshape(-1)

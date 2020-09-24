@@ -28,6 +28,9 @@ class TestOddsClassifier:
         assert_array_equal(self.classifier.X, self.X_1d)
         assert_array_equal(self.classifier.y, self.y)
         assert_array_almost_equal(self.classifier.X_prob, self.X_1p, decimal=4)
+        assert_true(isinstance(self.classifier.y, np.ndarray))
+        self.classifier.fit(self.X_1d, pd.Series(self.y))
+        assert_true(isinstance(self.classifier.y, np.ndarray))
 
     def test_fit_2d(self):
         self.classifier.fit(self.X_2d, self.y)
