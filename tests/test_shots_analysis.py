@@ -1,5 +1,8 @@
 import pandas as pd
-from nose.tools import assert_equal, assert_raises
+import numpy as np
+
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import assert_equal as np_assert_equal
 
 from core.shots_analysis import ShotChartAnalysis
 
@@ -29,20 +32,33 @@ class TestShotChartAnalysis:
         hist = self.shots.shot_hist(target="hamilri01")
         assert_equal(hist[0].sum(), 1)
         assert_equal(hist[0].shape, (10, 10))
+        np_assert_equal(hist[1], np.linspace(0, 500, num=11))
+        np_assert_equal(hist[2], np.linspace(0, 450, num=11))
+
         hist = self.shots.shot_hist()
         assert_equal(hist[0].sum(), 10)
+        assert_equal(hist[0].shape, (10, 10))
+
         hist = self.shots.shot_hist(target="hamilri01", bins=11)
         assert_equal(hist[0].shape, (11, 11))
+
         hist = self.shots.shot_hist(bins=11)
         assert_equal(hist[0].shape, (11, 11))
+
         hist = self.shots.shot_hist(group_col="code")
         assert_equal(hist[0].sum(), 10)
         assert_equal(hist[0].shape, (10, 10))
+
         hist = self.shots.shot_hist(group_col="code", target="201412300POR")
         assert_equal(hist[0].sum(), 5)
+
         hist = self.shots.shot_hist(group_col=["player_code"])
         assert_equal(hist[0].sum(), 10)
-        hist = self.shots.shot_hist(group_col=["code", "team"])
+
+        hist = self.shots.shot_hist(group_col=["code", "team"],
+                                    target="201412300POR/POR")
+        assert_equal(hist[0].sum(), 2)
+
         assert_raises(Warning, self.shots.shot_hist, target="alex")
         assert_raises(Exception, self.shots.shot_hist, group_col="foo")
 

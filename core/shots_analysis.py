@@ -8,17 +8,35 @@ from sklearn.preprocessing import StandardScaler
 
 class ShotChartAnalysis:
 
+    x_range = (0, 500)
+    y_range = (0, 450)
+
     def __init__(self, shots):
         self.shots = shots.copy()
         self.hists = {}
         self.hist_df = None
         self.pca_df = None
 
+    def _validate_group_col(self, group_col):
+        if isinstance(group_col, str):
+            group_col = [group_col]
+        for group in group_col:
+            if group not in self.shots.columns:
+                raise ValueError("Cannot find grouping in dataframe")
+        return group_col
+
+    @staticmethod
+    def _get_lookup(df, groups):
+        df_ls = df.loc[:, groups].values.tolist()
+        lookup = pd.Series(map("/".join, df_ls))
+        return lookup
+
     def calculate_hists(self, group_col='player_code', **kwargs):
-        if group_col not in self.shots.columns:
-            raise ValueError("Cannot find grouping in dataframe")
+        df = self.shots
         self.hists = {}
-        for target in self.shots[group_col].unique():
+        group_col = self._validate_group_col(group_col)
+        lookup = self._get_lookup(df, group_col)
+        for target in lookup.unique():
             try:
                 self.hists[target] = self.shot_hist(
                     group_col=group_col, target=target, **kwargs)
@@ -28,17 +46,16 @@ class ShotChartAnalysis:
 
     def shot_hist(self, group_col="player_code", target=None, **kwargs):
         df = self.shots
-        if isinstance(group_col, str):
-            group_col = [group_col]
-        for group in group_col:
-            if group not in df.columns:
-                raise ValueError(f"Cannot find column in dataframe: {group}")
+        if 'bins' not in kwargs.keys():
+            bins_x = np.linspace(self.x_range[0], self.x_range[1], num=11)
+            bins_y = np.linspace(self.y_range[0], self.y_range[1], num=11)
+            kwargs['bins'] = (bins_x, bins_y)
+        group_col = self._validate_group_col(group_col)
         if target is not None:
-            if target not in df[group_col].values:
-                raise Warning(f"Not in values: {target}")
-            df_ls = df.loc[:, group_col].values.tolist()
-            lookup = pd.Series(map("/".join, df_ls))
+            lookup = self._get_lookup(df, group_col)
             logic = lookup == target
+            if target not in lookup.values:
+                raise Warning(f"Not in values: {target}")
             df = self.shots.loc[logic]
         hist = np.histogram2d(df['x'], df['y'], **kwargs)
         return hist
@@ -59,7 +76,7 @@ class ShotChartAnalysis:
         self.pca_df.set_index(self.hist_df.index, inplace=True)
 
     def hist_plot(self, player, ax=plt.subplot()):
-        hist = self.hists[player][0]
+        hist = self.hists[player][0].astype(int).transpose()
         hist = hist / hist.sum()
         ax.title.set_text(player)
         ax.imshow(hist)
