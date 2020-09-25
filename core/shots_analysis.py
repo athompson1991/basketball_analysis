@@ -39,7 +39,10 @@ class ShotChartAnalysis:
         for target in lookup.unique():
             try:
                 self.hists[target] = self.shot_hist(
-                    group_col=group_col, target=target, **kwargs)
+                    group_col=group_col,
+                    target=target,
+                    **kwargs
+                )
                 print("Completed hist: " + target)
             except Exception as e:
                 raise Warning(f"Missing: {target}")
@@ -60,12 +63,14 @@ class ShotChartAnalysis:
         hist = np.histogram2d(df['x'], df['y'], **kwargs)
         return hist
 
-    def hists_to_df(self):
+    def hists_to_df(self, freq=False):
         df_dict = {}
-        for player in self.hists.keys():
-            n = self.hists[player][0].sum()
-            df_dict[player] = self.hists[player][0] / n
-            df_dict[player] = df_dict[player].flatten()
+        for target in self.hists.keys():
+            h = self.hists[target][0].astype(np.int)
+            n = h.sum()
+            if freq:
+                h = h / n
+            df_dict[target] = h.flatten()
         self.hist_df = pd.DataFrame(df_dict).transpose()
 
     def do_pca(self, pct=0.9):

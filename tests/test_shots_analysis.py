@@ -67,11 +67,24 @@ class TestShotChartAnalysis:
         assert_equal(len(self.shots.hists), 10)
         self.shots.calculate_hists(group_col="code")
         assert_equal(len(self.shots.hists), 2)
+        self.shots.calculate_hists(group_col=["code", "team"])
+        assert_equal(len(self.shots.hists), 4)
         assert_raises(Exception, self.shots.shot_hist, group_col='foo')
+        assert_raises(Exception, self.shots.shot_hist, group_col=['foo', 'team'])
 
     def test_hists_to_df(self):
-        self.shots.calculate_hists()
+        l1 = self.shots_df['code'] == '201412300POR'
+        l2 = self.shots_df['code'] == '201206210MIA'
+        hist1 = np.histogram2d(self.shots_df[l1].x, self.shots_df[l1].y)
+        hist2 = np.histogram2d(self.shots_df[l2].x, self.shots_df[l2].y)
+        self.shots.hists['201412300POR'] = hist1
+        self.shots.hists['201206210MIA'] = hist2
+
         self.shots.hists_to_df()
-        assert_equal(self.shots.hist_df.shape[0], 10)
+        assert_equal(self.shots.hist_df.shape[0], 2)
+        assert_equal(self.shots.hist_df[0].dtype, np.int)
+        self.shots.hists_to_df(freq=True)
+        assert_equal(self.shots.hist_df.shape[0], 2)
+        assert_equal(self.shots.hist_df[0].dtype, np.float)
 
 
